@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PDF Tools — PDF Edit, Convert aur Sign</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,'Segoe UI',Arial,sans-serif;color:#211d19;background:#faf7f2;line-height:1.6}
+header{background:#8f1d22;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.brand{font-size:22px;font-weight:800}
+header nav a{color:#ffe9c9;text-decoration:none;font-weight:700;margin-left:14px;font-size:14px}
+.hero{padding:44px 20px 10px;text-align:center;max-width:820px;margin:0 auto}
+.hero h1{font-size:clamp(28px,5.5vw,42px);margin:0 0 10px;line-height:1.15;color:#5e1216}
+.hero p{font-size:clamp(15px,2.6vw,18px);color:#5a5344;margin:0 auto;max-width:36em}
+.grid{max-width:1020px;margin:0 auto;padding:26px 16px 10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.tool{background:#fff;border:1.5px solid #e5ddcb;border-radius:14px;padding:20px}
+.tool h2{margin:0 0 6px;font-size:19px;color:#8f1d22}
+.tool p{margin:0 0 12px;font-size:14.5px;color:#5a5344}
+.tool input[type=file]{width:100%;margin:0 0 10px;font-size:14px}
+.tool input[type=text]{width:100%;padding:10px;border:1.5px solid #d8cfba;border-radius:9px;margin:0 0 10px;font-size:15px}
+.btn{display:inline-block;background:#8f1d22;color:#fff;border:0;padding:11px 18px;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;margin:2px 4px 2px 0}
+.btn.alt{background:#fff;color:#8f1d22;border:1.5px solid #8f1d22}
+.btn:disabled{opacity:.55;cursor:wait}
+.status{font-size:14px;margin:10px 0 0;min-height:20px;color:#14532d;font-weight:600}
+.status.err{color:#b3261e}
+canvas#signPad{border:1.5px dashed #b9ac8f;border-radius:10px;background:#fff;width:100%;max-width:440px;height:170px;touch-action:none;display:block;margin:0 0 10px}
+.note{max-width:820px;margin:6px auto 0;padding:0 20px;text-align:center;color:#5a5344;font-size:14.5px}
+footer{background:#3d0d10;color:#f5ead9;text-align:center;padding:22px 14px;font-size:14px;margin-top:34px}
+</style>
+</head>
+<body>
+<header><span class="brand">PDF Tools</span><nav><a href="#img2pdf">Image → PDF</a><a href="#pdf2img">PDF → Image</a><a href="#pdf2word">PDF → Word</a><a href="#sign">Sign</a></nav></header>
+<div class="hero">
+<h1>PDF Editor aur Converter — Saare Tools Ek Jagah</h1>
+<p>PDF edit karo, convert karo — <b>Image ko PDF</b> me, <b>PDF ko Image</b> me, <b>PDF ko Word</b> me, <b>Image ko Word</b> me badlo, aur PDF par <b>sign</b> bhi karo. Saare tools bilkul free hain aur aapke browser me hi chalte hain — file kisi server par upload nahi hoti.</p>
+</div>
+<div class="grid">
+
+<section class="tool" id="img2pdf">
+<h2>Image → PDF</h2>
+<p>Ek ya zyada photo chuno — sab milakar ek PDF ban jayegi, har photo ek page par.</p>
+<input type="file" id="i2pFiles" accept="image/*" multiple />
+<button class="btn" id="i2pBtn" type="button">PDF Banao</button>
+<p class="status" id="i2pStatus"></p>
+</section>
+
+<section class="tool" id="pdf2img">
+<h2>PDF → Image</h2>
+<p>PDF chuno — har page ki alag PNG photo banegi aur download ho jayegi.</p>
+<input type="file" id="p2iFile" accept="application/pdf,.pdf" />
+<button class="btn" id="p2iBtn" type="button">Images Banao</button>
+<p class="status" id="p2iStatus"></p>
+</section>
+
+<section class="tool" id="pdf2word">
+<h2>PDF → Word</h2>
+<p>PDF ka text nikaal kar Word (.doc) file banegi — Word ya Google Docs me khol kar edit kar sakte ho.</p>
+<input type="file" id="p2wFile" accept="application/pdf,.pdf" />
+<button class="btn" id="p2wBtn" type="button">Word Banao</button>
+<p class="status" id="p2wStatus"></p>
+</section>
+
+<section class="tool" id="img2word">
+<h2>Image → Word</h2>
+<p>Photo me likha text (OCR) padh kar Word file banegi. Saaf, bade aksharon wali photo par sabse sahi chalta hai — thoda time lag sakta hai.</p>
+<input type="file" id="i2wFile" accept="image/*" />
+<button class="btn" id="i2wBtn" type="button">Text Nikalo — Word Banao</button>
+<p class="status" id="i2wStatus"></p>
+</section>
+
+<section class="tool" id="sign">
+<h2>PDF par Sign Karo</h2>
+<p>PDF chuno, neeche box me ungli ya mouse se sign banao, phir button dabao — sign PDF ke aakhri page par lag jayega.</p>
+<input type="file" id="signFile" accept="application/pdf,.pdf" />
+<canvas id="signPad" width="440" height="170"></canvas>
+<button class="btn alt" id="signClear" type="button">Sign Saaf Karo</button>
+<button class="btn" id="signBtn" type="button">Sign Lagakar PDF Banao</button>
+<p class="status" id="signStatus"></p>
+</section>
+
+<section class="tool" id="editpdf">
+<h2>PDF Edit — Text Jodo</h2>
+<p>PDF chuno aur text likho — wo text PDF ke pehle page ke upar jud jayega. (Abhi English text ke liye hai.)</p>
+<input type="file" id="editFile" accept="application/pdf,.pdf" />
+<input type="text" id="editText" placeholder="Example: Approved — 23 Nov 2026" />
+<button class="btn" id="editBtn" type="button">Text Jodkar PDF Banao</button>
+<p class="status" id="editStatus"></p>
+</section>
+
+</div>
+<p class="note">Dhyaan: tools ke liye internet chahiye (PDF library browser me load hoti hai). Aapki files sirf aapke browser me rehti hain — kahin bheji nahi jati.</p>
+<footer>PDF Tools — PDF edit, convert aur sign, bilkul free.<br /><small>Made with Sanjay Website Maker</small></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+var NL = String.fromCharCode(10);
+function el(id){ return document.getElementById(id); }
+function setStatus(id, msg, isErr){ var s = el(id); s.textContent = msg; s.className = 'status' + (isErr ? ' err' : ''); }
+function downloadBlob(blob, name){ var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function(){ URL.revokeObjectURL(url); }, 3000); }
+function escH(s){ return String(s).split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;'); }
+function downloadDoc(text, name){
+  var lines = String(text).split(NL);
+  var body = '';
+  for (var i = 0; i < lines.length; i++) body += '<p>' + (lines[i] ? escH(lines[i]) : '&nbsp;') + '</p>';
+  var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>Document</title></head><body>' + body + '</body></html>';
+  downloadBlob(new Blob([String.fromCharCode(0xFEFF), html], { type: 'application/msword' }), name);
+}
+function libsReady(){ return typeof PDFLib !== 'undefined' && typeof pdfjsLib !== 'undefined'; }
+function libFail(id){ setStatus(id, 'Tool library load nahi hui — internet check karke page refresh karo, phir try karo.', true); }
+if (typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+function loadPdfJs(file){ return file.arrayBuffer().then(function(buf){ return pdfjsLib.getDocument({ data: buf }).promise; }); }
+
+/* Image -> PDF */
+el('i2pBtn').addEventListener('click', async function(){
+  var files = el('i2pFiles').files;
+  if (!files || !files.length) { setStatus('i2pStatus', 'Pehle kam se kam ek photo chuno.', true); return; }
+  if (typeof PDFLib === 'undefined') { libFail('i2pStatus'); return; }
+  var btn = this; btn.disabled = true;
+  try {
+    setStatus('i2pStatus', 'PDF ban rahi hai...');
+    var pdf = await PDFLib.PDFDocument.create();
+    for (var i = 0; i < files.length; i++) {
+      var dataUrl = await new Promise(function(res, rej){
+        var img = new Image();
+        var url = URL.createObjectURL(files[i]);
+        img.onload = function(){
+          var cv = document.createElement('canvas');
+          cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+          cv.getContext('2d').drawImage(img, 0, 0);
+          URL.revokeObjectURL(url);
+          res(cv.toDataURL('image/jpeg', 0.92));
+        };
+        img.onerror = function(){ URL.revokeObjectURL(url); rej(new Error('img')); };
+        img.src = url;
+      });
+      var jpgBytes = await (await fetch(dataUrl)).arrayBuffer();
+      var jpg = await pdf.embedJpg(jpgBytes);
+      var scale = Math.min(595 / jpg.width, 842 / jpg.height, 1);
+      var w = jpg.width * scale, h = jpg.height * scale;
+      var page = pdf.addPage([w, h]);
+      page.drawImage(jpg, { x: 0, y: 0, width: w, height: h });
+    }
+    var out = await pdf.save();
+    downloadBlob(new Blob([out], { type: 'application/pdf' }), 'images.pdf');
+    setStatus('i2pStatus', 'Ho gaya! PDF download ho gayi (' + files.length + ' photo).');
+  } catch (e) { setStatus('i2pStatus', 'Kuch gadbad ho gayi — photo kharab to nahi hai? Dobara try karo.', true); }
+  btn.disabled = false;
+});
+
+/* PDF -> Image */
+el('p2iBtn').addEventListener('click', async function(){
+  var f = el('p2iFile').files && el('p2iFile').files[0];
+  if (!f) { setStatus('p2iStatus', 'Pehle ek PDF chuno.', true); return; }
+  if (typeof pdfjsLib === 'undefined') { libFail('p2iStatus'); return; }
+  var btn = this; btn.disabled = true;
+  try {
+    var pdf = await loadPdfJs(f);
+    for (var p = 1; p <= pdf.numPages; p++) {
+      setStatus('p2iStatus', 'Page ' + p + ' / ' + pdf.numPages + ' ki photo ban rahi hai...');
+      var page = await pdf.getPage(p);
+      var viewport = page.getViewport({ scale: 2 });
+      var cv = document.createElement('canvas');
+      cv.width = viewport.width; cv.height = viewport.height;
+      await page.render({ canvasContext: cv.getContext('2d'), viewport: viewport }).promise;
+      await new Promise(function(res){ cv.toBlob(function(b){ if (b) downloadBlob(b, 'page-' + p + '.png'); res(); }, 'image/png'); });
+    }
+    setStatus('p2iStatus', 'Ho gaya! ' + pdf.numPages + ' page ki photos download ho gayi.');
+  } catch (e) { setStatus('p2iStatus', 'PDF khul nahi payi — file kharab to nahi hai? Dobara try karo.', true); }
+  btn.disabled = false;
+});
+
+/* PDF -> Word */
+el('p2wBtn').addEventListener('click', async function(){
+  var f = el('p2wFile').files && el('p2wFile').files[0];
+  if (!f) { setStatus('p2wStatus', 'Pehle ek PDF chuno.', true); return; }
+  if (typeof pdfjsLib === 'undefined') { libFail('p2wStatus'); return; }
+  var btn = this; btn.disabled = true;
+  try {
+    setStatus('p2wStatus', 'PDF se text nikala ja raha hai...');
+    var pdf = await loadPdfJs(f);
+    var all = '';
+    for (var p = 1; p <= pdf.numPages; p++) {
+      var page = await pdf.getPage(p);
+      var tc = await page.getTextContent();
+      var line = '';
+      for (var i = 0; i < tc.items.length; i++) {
+        line += tc.items[i].str;
+        if (tc.items[i].hasEOL) { all += line + NL; line = ''; } else { line += ' '; }
+      }
+      if (line) all += line + NL;
+      all += NL;
+    }
+    if (!all.trim()) { setStatus('p2wStatus', 'Is PDF me text nahi mila — ye scanned photo wali PDF lagti hai. Photo ko Image wale tool se try karo.', true); }
+    else { downloadDoc(all, 'pdf-text.doc'); setStatus('p2wStatus', 'Ho gaya! Word file download ho gayi — use Word me khol kar edit kar lo.'); }
+  } catch (e) { setStatus('p2wStatus', 'PDF khul nahi payi — file kharab to nahi hai? Dobara try karo.', true); }
+  btn.disabled = false;
+});
+
+/* Image -> Word (OCR) */
+function loadTesseract(){
+  return new Promise(function(res, rej){
+    if (window.Tesseract) { res(); return; }
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    s.onload = function(){ res(); };
+    s.onerror = function(){ rej(new Error('ocr')); };
+    document.head.appendChild(s);
+  });
+}
+el('i2wBtn').addEventListener('click', async function(){
+  var f = el('i2wFile').files && el('i2wFile').files[0];
+  if (!f) { setStatus('i2wStatus', 'Pehle ek photo chuno.', true); return; }
+  var btn = this; btn.disabled = true;
+  try {
+    setStatus('i2wStatus', 'OCR library load ho rahi hai...');
+    await loadTesseract();
+    setStatus('i2wStatus', 'Photo padhi ja rahi hai — 0%');
+    var result = await Tesseract.recognize(f, 'eng', { logger: function(m){ if (m.status === 'recognizing text') setStatus('i2wStatus', 'Photo padhi ja rahi hai — ' + Math.round(m.progress * 100) + '%'); } });
+    var text = result.data.text || '';
+    if (!text.trim()) { setStatus('i2wStatus', 'Photo me text saaf nahi padh paya — saaf, seedhi aur bade aksharon wali photo try karo.', true); }
+    else { downloadDoc(text, 'image-text.doc'); setStatus('i2wStatus', 'Ho gaya! Word file download ho gayi — use Word me khol kar edit kar lo.'); }
+  } catch (e) { setStatus('i2wStatus', 'OCR nahi ho paya — internet check karke dobara try karo.', true); }
+  btn.disabled = false;
+});
+
+/* Sign pad */
+var signDrawn = false, signDrawing = false, signLast = null;
+var pad = el('signPad'), pctx = pad.getContext('2d');
+pctx.lineWidth = 2.5; pctx.lineCap = 'round'; pctx.strokeStyle = '#14213d';
+function padPos(ev){ var r = pad.getBoundingClientRect(); var x = (ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left; var y = (ev.touches ? ev.touches[0].clientY : ev.clientY) - r.top; return { x: x * pad.width / r.width, y: y * pad.height / r.height }; }
+function padStart(ev){ ev.preventDefault(); signDrawing = true; signLast = padPos(ev); }
+function padMove(ev){ if (!signDrawing) return; ev.preventDefault(); var p = padPos(ev); pctx.beginPath(); pctx.moveTo(signLast.x, signLast.y); pctx.lineTo(p.x, p.y); pctx.stroke(); signLast = p; signDrawn = true; }
+function padEnd(){ signDrawing = false; }
+pad.addEventListener('mousedown', padStart); pad.addEventListener('mousemove', padMove); window.addEventListener('mouseup', padEnd);
+pad.addEventListener('touchstart', padStart, { passive: false }); pad.addEventListener('touchmove', padMove, { passive: false }); pad.addEventListener('touchend', padEnd);
+el('signClear').addEventListener('click', function(){ pctx.clearRect(0, 0, pad.width, pad.height); signDrawn = false; setStatus('signStatus', 'Sign saaf ho gaya — dobara banao.'); });
+
+/* Sign -> PDF */
+el('signBtn').addEventListener('click', async function(){
+  var f = el('signFile').files && el('signFile').files[0];
+  if (!f) { setStatus('signStatus', 'Pehle ek PDF chuno.', true); return; }
+  if (!signDrawn) { setStatus('signStatus', 'Pehle upar wale box me sign banao.', true); return; }
+  if (typeof PDFLib === 'undefined') { libFail('signStatus'); return; }
+  var btn = this; btn.disabled = true;
+  try {
+    setStatus('signStatus', 'Sign lagaya ja raha hai...');
+    var bytes = await f.arrayBuffer();
+    var pdf = await PDFLib.PDFDocument.load(bytes);
+    var sigBytes = await (await fetch(pad.toDataURL('image/png'))).arrayBuffer();
+    var sig = await pdf.embedPng(sigBytes);
+    var pages = pdf.getPages();
+    var page = pages[pages.length - 1];
+    var size = page.getSize();
+    var w = 150, h = 150 * sig.height / sig.width;
+    page.drawImage(sig, { x: size.width - w - 36, y: 30, width: w, height: h });
+    var out = await pdf.save();
+    downloadBlob(new Blob([out], { type: 'application/pdf' }), 'signed.pdf');
+    setStatus('signStatus', 'Ho gaya! Sign wali PDF download ho gayi.');
+  } catch (e) { setStatus('signStatus', 'PDF khul nahi payi — file kharab to nahi hai? Dobara try karo.', true); }
+  btn.disabled = false;
+});
+
+/* PDF Edit — text jodo */
+el('editBtn').addEventListener('click', async function(){
+  var f = el('editFile').files && el('editFile').files[0];
+  var text = el('editText').value.trim();
+  if (!f) { setStatus('editStatus', 'Pehle ek PDF chuno.', true); return; }
+  if (!text) { setStatus('editStatus', 'Pehle woh text likho jo PDF par jodna hai.', true); return; }
+  if (typeof PDFLib === 'undefined') { libFail('editStatus'); return; }
+  var btn = this; btn.disabled = true;
+  try {
+    setStatus('editStatus', 'Text joda ja raha hai...');
+    var bytes = await f.arrayBuffer();
+    var pdf = await PDFLib.PDFDocument.load(bytes);
+    var font = await pdf.embedFont(PDFLib.StandardFonts.Helvetica);
+    var pages = pdf.getPages();
+    var page = pages[0];
+    var size = page.getSize();
+    page.drawText(text, { x: 40, y: size.height - 48, size: 14, font: font, color: PDFLib.rgb(0.08, 0.08, 0.08) });
+    var out = await pdf.save();
+    downloadBlob(new Blob([out], { type: 'application/pdf' }), 'edited.pdf');
+    setStatus('editStatus', 'Ho gaya! Edit ki hui PDF download ho gayi.');
+  } catch (e) { setStatus('editStatus', 'Kuch gadbad ho gayi — PDF kharab to nahi hai, ya text me khaas nishaan to nahi hain? Dobara try karo.', true); }
+  btn.disabled = false;
+});
+</script>
+</body>
+</html>
